@@ -3,7 +3,7 @@ var AWS = require('aws-sdk');
 var gm = require('gm').subClass({ imageMagick: true });
 var s3 = new AWS.S3();
 
-var width_height = "100x100";
+var SIZES = ["800x600", "400x300"];
 
 exports.handler = function(event, context) {
     var message, srcKey, dstKey, srcBucket, dstBucket, filename;
@@ -13,7 +13,7 @@ exports.handler = function(event, context) {
     dstBucket = srcBucket;
     srcKey    =  message.s3.object.key.replace(/\+/g, " "); // undo white space replacement
     filename = srcKey.split("/")[1];
-    dstKey = "resized/" + filename;
+    dstKey = ""; // WIDTHxHEIGHT/filename
 
     // Infer the image type
     var typeMatch = srcKey.match(/\.([^.]*)$/);
@@ -49,7 +49,20 @@ exports.handler = function(event, context) {
             if(err){
                 return console.error(err);
             }
-            resize(size, width_height, imageType, original, srcKey, dstBucket, dstKey, contentType);
+
+            // For each SIZES, call the resize function
+            async.each(SIZES, function (width_height,  callback) {
+                var filename = srcKey.split("/")[1];
+                var thumbDstKey = width_height +"/" + filename;
+                resize(size, width_height, imageType, original, srcKey, dstBucket, thumbDstKey, contentType, callback);
+            },
+            function (err) {
+                if (err) {
+                    var err_message = 'Cannot resize ' + srcKey + 'error: ' + err;
+                    console.error(err_message);
+                }
+                context.done();
+            });
         });
     });
 };
