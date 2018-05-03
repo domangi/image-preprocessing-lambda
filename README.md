@@ -23,4 +23,4 @@ The complete process will be:
 
 ## Setup
 
-A complete description and step-by-step tutorial of the AWS architecture setup can be found here: ...
+A complete description and step-by-step tutorial of the AWS architecture setup can be found here: https://medium.freecodecamp.org/serverless-image-preprocessing-using-aws-lambda-42d58e1183f5 
